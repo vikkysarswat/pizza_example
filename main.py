@@ -306,6 +306,15 @@ mcp._mcp_server.request_handlers[types.ReadResourceRequest] = _handle_read_resou
 
 
 app = mcp.streamable_http_app()
+from fastapi.responses import HTMLResponse
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
+    return HTMLResponse(
+        "<h3>✅ Pizzaz MCP server is running on Render.<br>"
+        "Use <code>/mcp</code> for HTTP tool calls and "
+        "<code>/mcp/messages</code> for SSE connections.</h3>"
+    )
 
 try:
     from starlette.middleware.cors import CORSMiddleware
