@@ -319,7 +319,7 @@ async def root(request):
 from starlette.applications import Starlette
 app = Starlette(routes=[Route("/", root)])
 
-    app.add_middleware(
+app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
         allow_methods=["*"],
