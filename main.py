@@ -326,8 +326,7 @@ app.add_middleware(
         allow_headers=["*"],
         allow_credentials=False,
     )
-except Exception:
-    pass
+
 
 
 if __name__ == "__main__":
