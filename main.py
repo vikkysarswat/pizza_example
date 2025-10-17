@@ -305,19 +305,19 @@ mcp._mcp_server.request_handlers[types.CallToolRequest] = _call_tool_request
 mcp._mcp_server.request_handlers[types.ReadResourceRequest] = _handle_read_resource
 
 
-app = mcp.streamable_http_app()
-from fastapi.responses import HTMLResponse
+from starlette.routing import Route
+from starlette.responses import HTMLResponse
 
-@app.get("/", response_class=HTMLResponse)
-async def root():
+async def root(request):
     return HTMLResponse(
         "<h3>✅ Pizzaz MCP server is running on Render.<br>"
         "Use <code>/mcp</code> for HTTP tool calls and "
         "<code>/mcp/messages</code> for SSE connections.</h3>"
     )
 
-try:
-    from starlette.middleware.cors import CORSMiddleware
+# rebuild Starlette app with this route
+from starlette.applications import Starlette
+app = Starlette(routes=[Route("/", root)])
 
     app.add_middleware(
         CORSMiddleware,
