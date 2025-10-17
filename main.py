@@ -5,10 +5,10 @@ widget-backed tools that render the Pizzaz UI bundle. Each handler returns the
 HTML shell via an MCP resource and echoes the selected topping as structured
 content so the ChatGPT client can hydrate the widget. The module also wires the
 handlers into an HTTP/SSE stack so you can run the server with uvicorn on port
-8000, matching the Node transport behavior."""
+8000, matching the Node transport behavior.
+"""
 
 from __future__ import annotations
-
 from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Dict, List
@@ -17,6 +17,9 @@ import mcp.types as types
 from mcp.server.fastmcp import FastMCP
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+# --------------------------------------------------------------------------
+# Widget definitions
+# --------------------------------------------------------------------------
 
 @dataclass(frozen=True)
 class PizzazWidget:
@@ -37,11 +40,9 @@ widgets: List[PizzazWidget] = [
         invoking="Hand-tossing a map",
         invoked="Served a fresh map",
         html=(
-            "<div id=\"pizzaz-root\"></div>\n"
-            "<link rel=\"stylesheet\" href=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-0038.css\">\n"
-            "<script type=\"module\" src=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-0038.js\"></script>"
+            "<div id='pizzaz-root'></div>\n"
+            "<link rel='stylesheet' href='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-0038.css'>\n"
+            "<script type='module' src='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-0038.js'></script>"
         ),
         response_text="Rendered a pizza map!",
     ),
@@ -52,11 +53,9 @@ widgets: List[PizzazWidget] = [
         invoking="Carousel some spots",
         invoked="Served a fresh carousel",
         html=(
-            "<div id=\"pizzaz-carousel-root\"></div>\n"
-            "<link rel=\"stylesheet\" href=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-carousel-0038.css\">\n"
-            "<script type=\"module\" src=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-carousel-0038.js\"></script>"
+            "<div id='pizzaz-carousel-root'></div>\n"
+            "<link rel='stylesheet' href='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-carousel-0038.css'>\n"
+            "<script type='module' src='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-carousel-0038.js'></script>"
         ),
         response_text="Rendered a pizza carousel!",
     ),
@@ -67,11 +66,9 @@ widgets: List[PizzazWidget] = [
         invoking="Hand-tossing an album",
         invoked="Served a fresh album",
         html=(
-            "<div id=\"pizzaz-albums-root\"></div>\n"
-            "<link rel=\"stylesheet\" href=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-albums-0038.css\">\n"
-            "<script type=\"module\" src=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-albums-0038.js\"></script>"
+            "<div id='pizzaz-albums-root'></div>\n"
+            "<link rel='stylesheet' href='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-albums-0038.css'>\n"
+            "<script type='module' src='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-albums-0038.js'></script>"
         ),
         response_text="Rendered a pizza album!",
     ),
@@ -82,11 +79,9 @@ widgets: List[PizzazWidget] = [
         invoking="Hand-tossing a list",
         invoked="Served a fresh list",
         html=(
-            "<div id=\"pizzaz-list-root\"></div>\n"
-            "<link rel=\"stylesheet\" href=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-list-0038.css\">\n"
-            "<script type=\"module\" src=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-list-0038.js\"></script>"
+            "<div id='pizzaz-list-root'></div>\n"
+            "<link rel='stylesheet' href='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-list-0038.css'>\n"
+            "<script type='module' src='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-list-0038.js'></script>"
         ),
         response_text="Rendered a pizza list!",
     ),
@@ -97,11 +92,9 @@ widgets: List[PizzazWidget] = [
         invoking="Hand-tossing a video",
         invoked="Served a fresh video",
         html=(
-            "<div id=\"pizzaz-video-root\"></div>\n"
-            "<link rel=\"stylesheet\" href=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-video-0038.css\">\n"
-            "<script type=\"module\" src=\"https://persistent.oaistatic.com/"
-            "ecosystem-built-assets/pizzaz-video-0038.js\"></script>"
+            "<div id='pizzaz-video-root'></div>\n"
+            "<link rel='stylesheet' href='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-video-0038.css'>\n"
+            "<script type='module' src='https://persistent.oaistatic.com/ecosystem-built-assets/pizzaz-video-0038.js'></script>"
         ),
         response_text="Rendered a pizza video!",
     ),
@@ -109,23 +102,22 @@ widgets: List[PizzazWidget] = [
 
 
 MIME_TYPE = "text/html+skybridge"
+WIDGETS_BY_ID: Dict[str, PizzazWidget] = {w.identifier: w for w in widgets}
+WIDGETS_BY_URI: Dict[str, PizzazWidget] = {w.template_uri: w for w in widgets}
 
-
-WIDGETS_BY_ID: Dict[str, PizzazWidget] = {widget.identifier: widget for widget in widgets}
-WIDGETS_BY_URI: Dict[str, PizzazWidget] = {widget.template_uri: widget for widget in widgets}
-
+# --------------------------------------------------------------------------
+# PizzaInput Schema
+# --------------------------------------------------------------------------
 
 class PizzaInput(BaseModel):
-    """Schema for pizza tools."""
-
     pizza_topping: str = Field(
-        ...,
-        alias="pizzaTopping",
-        description="Topping to mention when rendering the widget.",
+        ..., alias="pizzaTopping", description="Topping to mention when rendering the widget."
     )
-
     model_config = ConfigDict(populate_by_name=True, extra="forbid")
 
+# --------------------------------------------------------------------------
+# MCP Setup
+# --------------------------------------------------------------------------
 
 mcp = FastMCP(
     name="pizzaz-python",
@@ -133,7 +125,6 @@ mcp = FastMCP(
     message_path="/mcp/messages",
     stateless_http=True,
 )
-
 
 TOOL_INPUT_SCHEMA: Dict[str, Any] = {
     "type": "object",
@@ -159,11 +150,7 @@ def _tool_meta(widget: PizzazWidget) -> Dict[str, Any]:
         "openai/toolInvocation/invoked": widget.invoked,
         "openai/widgetAccessible": True,
         "openai/resultCanProduceWidget": True,
-        "annotations": {
-          "destructiveHint": False,
-          "openWorldHint": False,
-          "readOnlyHint": True,
-        }
+        "annotations": {"destructiveHint": False, "openWorldHint": False, "readOnlyHint": True},
     }
 
 
@@ -171,25 +158,25 @@ def _embedded_widget_resource(widget: PizzazWidget) -> types.EmbeddedResource:
     return types.EmbeddedResource(
         type="resource",
         resource=types.TextResourceContents(
-            uri=widget.template_uri,
-            mimeType=MIME_TYPE,
-            text=widget.html,
-            title=widget.title,
+            uri=widget.template_uri, mimeType=MIME_TYPE, text=widget.html, title=widget.title
         ),
     )
 
+# --------------------------------------------------------------------------
+# MCP Handlers
+# --------------------------------------------------------------------------
 
 @mcp._mcp_server.list_tools()
 async def _list_tools() -> List[types.Tool]:
     return [
         types.Tool(
-            name=widget.identifier,
-            title=widget.title,
-            description=widget.title,
+            name=w.identifier,
+            title=w.title,
+            description=w.title,
             inputSchema=deepcopy(TOOL_INPUT_SCHEMA),
-            _meta=_tool_meta(widget),
+            _meta=_tool_meta(w),
         )
-        for widget in widgets
+        for w in widgets
     ]
 
 
@@ -197,14 +184,14 @@ async def _list_tools() -> List[types.Tool]:
 async def _list_resources() -> List[types.Resource]:
     return [
         types.Resource(
-            name=widget.title,
-            title=widget.title,
-            uri=widget.template_uri,
-            description=_resource_description(widget),
+            name=w.title,
+            title=w.title,
+            uri=w.template_uri,
+            description=_resource_description(w),
             mimeType=MIME_TYPE,
-            _meta=_tool_meta(widget),
+            _meta=_tool_meta(w),
         )
-        for widget in widgets
+        for w in widgets
     ]
 
 
@@ -212,14 +199,14 @@ async def _list_resources() -> List[types.Resource]:
 async def _list_resource_templates() -> List[types.ResourceTemplate]:
     return [
         types.ResourceTemplate(
-            name=widget.title,
-            title=widget.title,
-            uriTemplate=widget.template_uri,
-            description=_resource_description(widget),
+            name=w.title,
+            title=w.title,
+            uriTemplate=w.template_uri,
+            description=_resource_description(w),
             mimeType=MIME_TYPE,
-            _meta=_tool_meta(widget),
+            _meta=_tool_meta(w),
         )
-        for widget in widgets
+        for w in widgets
     ]
 
 
@@ -227,21 +214,14 @@ async def _handle_read_resource(req: types.ReadResourceRequest) -> types.ServerR
     widget = WIDGETS_BY_URI.get(str(req.params.uri))
     if widget is None:
         return types.ServerResult(
-            types.ReadResourceResult(
-                contents=[],
-                _meta={"error": f"Unknown resource: {req.params.uri}"},
-            )
+            types.ReadResourceResult(contents=[], _meta={"error": f"Unknown resource: {req.params.uri}"})
         )
 
     contents = [
         types.TextResourceContents(
-            uri=widget.template_uri,
-            mimeType=MIME_TYPE,
-            text=widget.html,
-            _meta=_tool_meta(widget),
+            uri=widget.template_uri, mimeType=MIME_TYPE, text=widget.html, _meta=_tool_meta(widget)
         )
     ]
-
     return types.ServerResult(types.ReadResourceResult(contents=contents))
 
 
@@ -250,12 +230,7 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
     if widget is None:
         return types.ServerResult(
             types.CallToolResult(
-                content=[
-                    types.TextContent(
-                        type="text",
-                        text=f"Unknown tool: {req.params.name}",
-                    )
-                ],
+                content=[types.TextContent(type="text", text=f"Unknown tool: {req.params.name}")],
                 isError=True,
             )
         )
@@ -266,12 +241,7 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
     except ValidationError as exc:
         return types.ServerResult(
             types.CallToolResult(
-                content=[
-                    types.TextContent(
-                        type="text",
-                        text=f"Input validation error: {exc.errors()}",
-                    )
-                ],
+                content=[types.TextContent(type="text", text=f"Input validation error: {exc.errors()}")],
                 isError=True,
             )
         )
@@ -289,12 +259,7 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
 
     return types.ServerResult(
         types.CallToolResult(
-            content=[
-                types.TextContent(
-                    type="text",
-                    text=widget.response_text,
-                )
-            ],
+            content=[types.TextContent(type="text", text=widget.response_text)],
             structuredContent={"pizzaTopping": topping},
             _meta=meta,
         )
@@ -304,32 +269,42 @@ async def _call_tool_request(req: types.CallToolRequest) -> types.ServerResult:
 mcp._mcp_server.request_handlers[types.CallToolRequest] = _call_tool_request
 mcp._mcp_server.request_handlers[types.ReadResourceRequest] = _handle_read_resource
 
+# --------------------------------------------------------------------------
+# Web server (FastAPI + Starlette hybrid)
+# --------------------------------------------------------------------------
 
-from starlette.routing import Route
-from starlette.responses import HTMLResponse
+from fastapi import FastAPI
+from fastapi.responses import HTMLResponse
+from starlette.middleware.cors import CORSMiddleware
 
-async def root(request):
+# Create FastAPI app
+app = FastAPI()
+
+# Mount the MCP Starlette app
+mcp_app = mcp.streamable_http_app()
+app.mount("/mcp", mcp_app)
+
+@app.get("/", response_class=HTMLResponse)
+async def root():
     return HTMLResponse(
         "<h3>✅ Pizzaz MCP server is running on Render.<br>"
         "Use <code>/mcp</code> for HTTP tool calls and "
         "<code>/mcp/messages</code> for SSE connections.</h3>"
     )
 
-# rebuild Starlette app with this route
-from starlette.applications import Starlette
-app = Starlette(routes=[Route("/", root)])
-
+# Enable CORS
 app.add_middleware(
-        CORSMiddleware,
-        allow_origins=["*"],
-        allow_methods=["*"],
-        allow_headers=["*"],
-        allow_credentials=False,
-    )
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+    allow_credentials=False,
+)
 
-
+# --------------------------------------------------------------------------
+# Uvicorn entrypoint
+# --------------------------------------------------------------------------
 
 if __name__ == "__main__":
     import uvicorn
-
     uvicorn.run("main:app", host="0.0.0.0", port=8000)
