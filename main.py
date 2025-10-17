@@ -292,6 +292,11 @@ async def root():
         "<code>/mcp/messages</code> for SSE connections.</h3>"
     )
 
+@app.post("/mcp/")
+async def mcp_endpoint(request: dict):
+    # implement your connector logic here
+    return {"message": "MCP endpoint OK"}
+
 # Enable CORS
 app.add_middleware(
     CORSMiddleware,
